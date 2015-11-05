@@ -1,8 +1,14 @@
+# AVR-Geiger
+# https://github.com/gcavallo/AVR-Geiger
+
+# Copyright (c) 2015, Gabriel Cavallo
+# GPLv3 License https://gnu.org/licenses/gpl.txt
+
 DEVICE     = atmega328p
 PROGRAMMER = usbasp
 PORT       = /dev/ttyACM0
 NAME       = main
-OBJECTS    = $(NAME).o uart.o
+OBJECTS    = $(NAME).o uart.o time.o
 SRCDIR     = avr
 OBJDIR     = avr/obj
 BINDIR     = avr/bin
