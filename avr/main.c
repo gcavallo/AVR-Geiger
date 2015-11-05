@@ -43,6 +43,7 @@ int main(void) {
 		if (seconds >= 60) {
 			cli();
 			uart_send(cpm);    // print cpm number
+			uart_lb();         // print linebreak
 			cpm = 0;           // reset cpm counter
 			seconds = 0;       // reset seconds counter
 			sei();

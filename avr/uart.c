@@ -62,7 +62,11 @@ void uart_send(int64_t num) {
 		loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
 		UDR = p[i];                            // send byte to UDR
 	}
+}
 
+void uart_lb(void) {
 	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
-	UDR = '\r';                            // send linebreak to UDR
+	UDR = '\r';                            // send CR to UDR
+	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
+	UDR = '\n';                            // send LF to UDR
 }
