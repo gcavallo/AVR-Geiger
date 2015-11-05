@@ -27,8 +27,8 @@
 #endif
 
 #ifdef UDR0
-#define UBBRH UBBR0H
-#define UBBRL UBBR0L
+#define UBRRH UBRR0H
+#define UBRRL UBRR0L
 #define UCSRA UCSR0A
 #define UCSRB UCSR0B
 #define UCSRC UCSR0C
