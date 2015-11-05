@@ -10,22 +10,8 @@
 #include <avr/interrupt.h>    // interrupts
 
 #include "main.h"
+#include "time.h"
 #include "uart.h"
-
-uint16_t seconds = 0;
-
-void timer1_init(void) {
-	OCR1A = 0x3D08;                     // (clock / prescaler) * seconds) - 1
-	TCCR1B |= _BV(WGM12);               // set TIMER1 to CTC mode
-	TIMSK1 |= _BV(OCIE1A);              // set interrupt on CTC match
-	TCCR1B |= _BV(CS12) | _BV(CS10);    // start TIMER1 with 1024 prescaler
-}
-
-ISR (TIMER1_COMPA_vect) {
-	seconds++;
-}
-
-volatile uint16_t cpm = 0;
 
 ISR(INT0_vect) {
 	cpm++;
@@ -38,6 +24,7 @@ int main(void) {
 	DDRD &= ~_BV(0);    // reset INT0 to input mode
 	PORTD |= _BV(0);    // set INT0 to high
 	sei();              // enable global interrupts
+	cpm = 0;            // reset cpm counter
 
 	while(1) {
 		if (seconds >= 60) {
