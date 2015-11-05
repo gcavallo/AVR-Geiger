@@ -1,2 +1,2 @@
 void uart_init(void);
-void uart_send(uint16_t num);
+void uart_send(int64_t num);

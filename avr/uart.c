@@ -51,16 +51,18 @@ void uart_init(void) {
 		UCSRA &= ~_BV(U2X);
 	#endif
 
-	UCSRC |= _BV(UCSZ1) | _BV(UCSZ0);    // 8 bits
+	UCSRC |= _BV(UCSZ1) | _BV(UCSZ0);    // 8-bit USART
 	UCSRB |= _BV(TXEN) | _BV(RXEN);      // enable RX/TX
 }
 
-void uart_send(uint16_t num) {
-	uint8_t *p = (uint8_t*)&num;           // split num into bytes
-	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR
-	UDR = p[0];                            // send first byte
-	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR
-	UDR = p[1];                            // send last byte
-	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR
-	UDR = '\r';                            // send line break
+void uart_send(int64_t num) {
+	int8_t *p = (int8_t*)&num;    // split num into bytes
+
+	for (uint8_t i=0; i<8; i++) {
+		loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
+		UDR = p[i];                            // send byte to UDR
+	}
+
+	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
+	UDR = '\r';                            // send linebreak to UDR
 }
