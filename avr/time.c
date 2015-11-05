@@ -1,3 +1,10 @@
+/*
+ *    time.c - AVR timer library
+ *
+ *    Copyright (c) 2015, Gabriel Cavallo
+ *    GPLv3 License https://gnu.org/licenses/gpl.txt
+ */
+
 #ifndef F_CPU
 #define F_CPU 16000000UL
 #endif
@@ -19,6 +26,6 @@ void timer1_init(void) {
 	seconds = 0;                        // reset TIMER1 to 0
 }
 
-ISR (TIMER0_COMPA_vect) {           // define TIMER1 interrupt
+ISR (TIMER0_COMPA_vect) {    // define TIMER1 interrupt
 	seconds++;
 }
