@@ -5,6 +5,6 @@
  *    GPLv3 License https://gnu.org/licenses/gpl.txt
  */
 
-uint16_t seconds;
+volatile uint16_t seconds;
 
 void timer1_init(void);
