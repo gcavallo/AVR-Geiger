@@ -42,8 +42,9 @@ else
 	DS:cpm:GAUGE:1m:0:U RRA:AVERAGE:0.5:1m:1w RRA:AVERAGE:0.5:1h:1y \
 	&& chmod 640 /usr/share/geiger/geiger.conf
 endif
-ifneq ($(wildcard /usr/lib/systemd/user),)
+ifneq ($(wildcard /etc/systemd/system),)
 	cp daemon/geiger.service /etc/systemd/system && chmod 644 /etc/systemd/system/geiger.service
+	@echo Enable daemon with \'systemctl enable geiger.conf\' as root!
 else
 	$(warning Systemd not found!)
 endif
