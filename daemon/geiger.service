@@ -1,0 +1,8 @@
+[Unit]
+Description=Geiger daemon
+
+[Service]
+ExecStart=/usr/local/bin/geiger
+
+[Install]
+WantedBy=default.target

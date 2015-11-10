@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# Geiger
+# https://github.com/gcavallo/AVR-Geiger
+
+# Copyright (c) 2015, Gabriel Cavallo
+# GPLv3 License https://gnu.org/licenses/gpl.txt
+
+. "/usr/share/geiger/geiger.conf"
+rrdfile="/usr/share/geiger/geiger.rrd"
+
+case "$tube" in
+	STS-5|SBM-20)
+		factor="0.0057"
+		alert="100"
+		;;
+	STS-6|SBM-19)
+		factor="0.0011"
+		alert="250"
+		;;
+	J305)
+		factor="0.0081"
+		alert="75"
+		;;
+	LND-712)
+		factor="0.01"
+		alert="50"
+		;;
+	*)
+		echo "Invalid tube!"
+		exit 1
+		;;
+esac
+
+function graph {
+	duration=(hour day week month year)
+	for i in ${duration[@]}; do
+		rrdtool graph /usr/share/geiger/graph-${i}.png --imgformat=PNG \
+			--title="$city, $country ($tube)" \
+			--end="now" \
+			--start="-1$i" \
+			--vertical-label="CPM" \
+			--right-axis-label="µSv/h" \
+			--right-axis="$factor:0" \
+			--right-axis-format="%.2lf" \
+			--alt-y-grid \
+			--units-length=4 \
+			--width=720 \
+			--height=240 \
+			--lower-limit=0 \
+			--slope-mode \
+			--border=0 \
+			--pango-markup \
+			--watermark="$(date --rfc-2822)" \
+			--color="BACK#FFFFFF" \
+			--color="GRID#666666" \
+			--color="MGRID#333333" \
+			--color="ARROW#000000" \
+			DEF:cpm="$rrdfile":cpm:AVERAGE \
+			VDEF:min=cpm,MINIMUM \
+			VDEF:avg=cpm,AVERAGE \
+			VDEF:max=cpm,MAXIMUM \
+			VDEF:last=cpm,LAST \
+			CDEF:trend=cpm,240,TRENDNAN \
+			VDEF:tmin=trend,MINIMUM \
+			VDEF:tavg=trend,AVERAGE \
+			VDEF:tmax=trend,MAXIMUM \
+			VDEF:tlast=trend,LAST \
+			CDEF:usvh=cpm,0.0057,* \
+			CDEF:msvy=usvh,24,366,0.001,*,*,* \
+			VDEF:uSv_h=usvh,AVERAGE \
+			VDEF:mSv_y=msvy,AVERAGE \
+			COMMENT:"               Min        Avg         Max       Last\u" \
+			GPRINT:uSv_h:"%6.3lf µSv/h" \
+			GPRINT:mSv_y:"%6.3lf mSv/y\r" \
+			AREA:"cpm#5bc0de99" \
+			LINE2:"cpm#5bc0de99:CPM      " \
+			GPRINT:min:"%5.0lf    " \
+			GPRINT:avg:"%5.0lf    " \
+			GPRINT:max:"%5.0lf    " \
+			GPRINT:last:"%5.0lf\l" \
+			LINE2:"trend#337ab7:Trend    " \
+			GPRINT:tmin:"%5.0lf    " \
+			GPRINT:tavg:"%5.0lf    " \
+			GPRINT:tmax:"%5.0lf    " \
+			GPRINT:tlast:"%5.0lf\l" \
+			COMMENT:"\u" \
+			LINE:"avg#449d44:Average" \
+			HRULE:"$alert#d9534f:Alert\r" >/dev/null
+	done
+}
+
+stty -F "$port" 9600 sane raw igncr
+while read -r cpm; do
+	rrdtool update $rrdfile $(date +%s):$cpm
+	graph
+done < "$port"
