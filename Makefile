@@ -20,24 +20,54 @@ AVRDUDE    = avrdude -v -c $(PROGRAMMER) -p $(DEVICE) -P $(PORT) -b 57600 -D -U 
 
 all: $(BINDIR)/$(NAME).hex
 
+help:
+	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
+
+install: ## install daemon on this system.
+	cp daemon/geiger /usr/local/bin && chmod 755 /usr/local/bin/geiger
+ifneq ($(wildcard /usr/share/geiger),)
+	$(info "/usr/share/geiger" exists)
+else
+	mkdir -p /usr/share/geiger && chmod 755 /usr/share/geiger
+endif
+ifneq ($(wildcard /usr/share/geiger/geiger.conf),)
+	$(info "/usr/share/geiger/geiger.conf" exists)
+else
+	cp daemon/geiger.conf /usr/share/geiger && chmod 640 /usr/share/geiger/geiger.conf
+endif
+ifneq ($(wildcard /usr/share/geiger/geiger.rrd),)
+	$(info "/usr/share/geiger/geiger.rrd" exists)
+else
+	rrdtool create "/usr/share/geiger/geiger.rrd" --no-overwrite --step=1 \
+	DS:cpm:GAUGE:1m:0:U RRA:AVERAGE:0.5:1m:1w RRA:AVERAGE:0.5:1h:1y \
+	&& chmod 640 /usr/share/geiger/geiger.conf
+endif
+ifneq ($(wildcard /usr/lib/systemd/user),)
+	cp daemon/geiger.service /etc/systemd/system && chmod 644 /etc/systemd/system/geiger.service
+else
+	$(warning Systemd not found!)
+endif
+
+uninstall: ## remove all files from system including database and configs.
+uninstall: clean
+	rm -rf /usr/share/geiger
+	rm -f /usr/lib/systemd/user/geiger.service
+
+clean: ## remove binary files for reinstall (keep database and config).
+	rm -f $(BINDIR)/$(NAME).hex $(BINDIR)/$(NAME).elf $(addprefix $(OBJDIR)/, $(OBJECTS))
+	rm -f /usr/local/bin/geiger
+
+flash: ## flash microcontroller with an AVR programmer.
+	$(AVRDUDE)
+
+dump: ## dump AVR binary for debug.
+	avr-objdump -d $(BINDIR)/$(NAME).elf
+
 $(OBJDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
-
-install: flash
-
-clean:
-	rm -f $(BINDIR)/$(NAME).hex $(BINDIR)/$(NAME).elf $(addprefix $(OBJDIR)/, $(OBJECTS))
-
-flash:
-	# Leonardo/atmega32u4: hard-reset into bootloader before flashing!
-	$(AVRDUDE)
 
 $(BINDIR)/$(NAME).elf: $(addprefix $(OBJDIR)/, $(OBJECTS))
 	$(CC) -o $@ $^
 
 $(BINDIR)/$(NAME).hex: $(BINDIR)/$(NAME).elf
-	rm -f $(BINDIR)/$(NAME).hex
 	avr-objcopy -O ihex -R .eeprom $(BINDIR)/$(NAME).elf $(BINDIR)/$(NAME).hex
-
-debug: $(BINDIR)/$(NAME).elf
-	avr-objdump -d $(BINDIR)/$(NAME).elf
