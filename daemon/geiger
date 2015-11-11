@@ -90,8 +90,17 @@ function graph {
 	done
 }
 
+function datetime {
+	date "$@" +%s
+}
+
+last=$(datetime)
 stty -F "$port" 9600 sane raw igncr
 while read -r cpm; do
-	rrdtool update $rrdfile $(date +%s):$cpm
-	graph
+	now=$(datetime)
+	rrdtool update $rrdfile $now:$cpm
+	if (( $now - $last >= $interval )); then
+		last=$(datetime)
+		graph
+	fi
 done < "$port"
