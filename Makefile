@@ -44,7 +44,7 @@ else
 endif
 ifneq ($(wildcard /etc/systemd/system),)
 	cp daemon/geiger.service /etc/systemd/system && chmod 644 /etc/systemd/system/geiger.service
-	@echo Enable daemon with \'systemctl enable geiger.conf\' as root!
+	@echo Enable daemon with \'systemctl enable geiger.service\' as root!
 else
 	$(warning Systemd not found!)
 endif
