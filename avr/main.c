@@ -14,7 +14,7 @@
 #include "uart.h"
 
 ISR(INT0_vect) {
-	cpm++;
+	if (cpm < UINT16_MAX) cpm++;
 }
 
 int main(void) {
