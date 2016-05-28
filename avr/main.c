@@ -14,7 +14,8 @@
 #include "uart.h"
 
 ISR(INT0_vect) {
-	if (cpm < UINT16_MAX) cpm++;
+	if (cpm < UINT16_MAX)
+		cpm++;
 }
 
 int main(void) {
@@ -28,12 +29,11 @@ int main(void) {
 
 	while(1) {
 		if (seconds >= 60) {
-			cli();
-			uart_send(cpm);    // print cpm number
-			uart_lb();         // print linebreak
-			cpm = 0;           // reset cpm counter
-			seconds = 0;       // reset seconds counter
-			sei();
+			cli();                   // disable global interrupts
+			uart_puts(itoa(cpm));    // print cpm number
+			cpm = 0;                 // reset cpm counter
+			seconds = 0;             // reset seconds counter
+			sei();                   // enable global interrupts
 		}
 	}
 }

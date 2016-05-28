@@ -6,5 +6,7 @@
  */
 
 void uart_init(void);
-void uart_send(int64_t num);
-void uart_lb(void);
+char uart_getchar(void);
+void uart_putchar(char c);
+void uart_puts(char *str);
+char *itoa(int32_t);

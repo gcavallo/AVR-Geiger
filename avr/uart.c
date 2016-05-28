@@ -18,6 +18,7 @@
 
 #include "uart.h"
 
+/* ATmega32u4 */
 #ifdef UDR1
 #define UBRRH UBRR1H
 #define UBRRL UBRR1L
@@ -29,10 +30,12 @@
 #define UCSZ1 UCSZ11
 #define RXEN  RXEN1
 #define TXEN  TXEN1
+#define RXC   RXC1
 #define UDRE  UDRE1
 #define UDR   UDR1
 #endif
 
+/* ATmega328 */
 #ifdef UDR0
 #define UBRRH UBRR0H
 #define UBRRL UBRR0L
@@ -44,6 +47,7 @@
 #define UCSZ1 UCSZ01
 #define RXEN  RXEN0
 #define TXEN  TXEN0
+#define RXC   RXC0
 #define UDRE  UDRE0
 #define UDR   UDR0
 #endif
@@ -62,18 +66,36 @@ void uart_init(void) {
 	UCSRB |= _BV(TXEN) | _BV(RXEN);      // enable RX/TX
 }
 
-void uart_send(int64_t num) {
-	int8_t *p = (int8_t*)&num;    // split num into bytes
-
-	for (uint8_t i=0; i<8; i++) {
-		loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
-		UDR = p[i];                            // send byte to UDR
-	}
+char uart_getchar(void) {
+	loop_until_bit_is_set(UCSRA, RXC);
+	return UDR;
 }
 
-void uart_lb(void) {
+void uart_putchar(char c) {
+	if (c == '\n')
+		uart_putchar('\r');
 	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
-	UDR = '\r';                            // send CR to UDR
-	loop_until_bit_is_set(UCSRA, UDRE);    // wait for UDR empty
-	UDR = '\n';                            // send LF to UDR
+	UDR = c;                               // send byte to UDR
+}
+
+void uart_puts(char *str) {
+	for (uint8_t i = 0; str[i] != '\0'; i++)
+		uart_putchar(str[i]);
+}
+
+char *itoa(int32_t num) {
+	static char s[12];
+	int8_t len = 11;
+
+	s[0] = num < 0;
+	s[len] = '\0';
+
+	do
+		s[--len] = '0' + (s[0] ? -1 : 1) * (num % 10);
+	while (num /= 10);
+
+	if (s[0])
+		s[--len] = '-';
+
+	return &s[len];
 }
