@@ -12,6 +12,6 @@ void uart_init(void);
 char uart_getchar(void);
 void uart_putchar(char c);
 void uart_puts(char *str);
-char *itoa(int32_t);
+char *itoa(int32_t num);
 
 #endif /* UART_H */
