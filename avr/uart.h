@@ -9,4 +9,4 @@ void uart_init(void);
 char uart_getchar(void);
 void uart_putchar(char c);
 void uart_puts(char *str);
-char *itoa(int16_t num);
+char *itoa(int32_t);

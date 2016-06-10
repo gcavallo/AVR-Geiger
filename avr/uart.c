@@ -83,7 +83,7 @@ void uart_puts(char *str) {
 		uart_putchar(str[i]);
 }
 
-char *itoa(int16_t num) {
+char *itoa(int32_t num) {
 	static char s[12];
 	int8_t len = 11;
 
