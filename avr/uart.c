@@ -88,7 +88,6 @@ char *itoa(int32_t num) {
 	int8_t len = 11;
 
 	s[0] = num < 0;
-	s[len] = '\0';
 
 	do
 		s[--len] = '0' + (s[0] ? -1 : 1) * (num % 10);
