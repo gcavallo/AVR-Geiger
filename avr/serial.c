@@ -1,5 +1,5 @@
 /*
- *    uart.c - AVR serial library
+ *    serial.c - AVR serial library
  *
  *    Copyright (c) 2015, Gabriel Cavallo
  *    GPLv3 License https://gnu.org/licenses/gpl.txt
@@ -16,7 +16,7 @@
 #include <avr/io.h>
 #include <util/setbaud.h>    // macros for baud rate calculations
 
-#include "uart.h"
+#include "serial.h"
 
 /* ATmega32u4 */
 #ifdef UDR1

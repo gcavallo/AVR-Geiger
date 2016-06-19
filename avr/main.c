@@ -11,7 +11,7 @@
 
 #include "main.h"
 #include "time.h"
-#include "uart.h"
+#include "serial.h"
 
 ISR(INT0_vect) {
 	if (cpm < UINT16_MAX)
