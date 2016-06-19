@@ -7,16 +7,18 @@
 DEVICE     = atmega328p
 PROGRAMMER = usbasp
 PORT       = /dev/ttyACM0
-NAME       = main
-OBJECTS    = $(NAME).o uart.o time.o
+NAME       = geiger
 SRCDIR     = avr
 OBJDIR     = avr/obj
 BINDIR     = avr/bin
+OBJECTS    = $(patsubst $(SRCDIR)/%.c,%.o,$(wildcard $(SRCDIR)/*.c))
 
 VPATH      = $(SRCDIR)
 CC         = avr-gcc -mmcu=$(DEVICE)
-CFLAGS     = -Wall -Wextra -Werror -Os
+CFLAGS     = -Wall -Wextra -Werror -Os -std=c99 -pedantic
 AVRDUDE    = avrdude -v -c $(PROGRAMMER) -p $(DEVICE) -P $(PORT) -b 57600 -D -U flash:w:$(BINDIR)/$(NAME).hex:i
+
+.PHONY: test
 
 all: $(BINDIR)/$(NAME).hex
 
@@ -61,8 +63,19 @@ clean: ## remove binary files for reinstall (keep database and config).
 flash: ## flash microcontroller with an AVR programmer.
 	$(AVRDUDE)
 
+test:
+	gcc $(CFLAGS) test/test.c -o test/test
+	chmod 755 test/test
+	@echo -e "\e[1;32m"
+	@test/test
+	@echo -e "\e[0m"
+
 dump: ## dump AVR binary for debug.
-	avr-objdump -d $(BINDIR)/$(NAME).elf
+	@echo -e "\e[1;33m"
+	@avr-objdump -d $(BINDIR)/$(NAME).elf
+	@echo -e "\e[1;31m"
+	@avr-size --format=avr --mcu=$(DEVICE) $(BINDIR)/$(NAME).elf
+	@echo -e "\e[0m"
 
 $(OBJDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
